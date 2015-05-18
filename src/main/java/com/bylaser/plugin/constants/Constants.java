@@ -17,7 +17,7 @@ public final class Constants {
     public static final String I_SENT_TO_CONTACT = "sentToContact";
     public static final String I_INVOICE_STATUS = "status";
     public static final String I_INVOICE_TYPE = "type";
-    public static final String I_INVOICE_LINES = "InvoiceLineLINK";
+    public static final String I_INVOICE_LINES = "invoiceLines";
 
     //list of LineItem attribute names
     public static final String LI_ACCOUNT_CODE = "AccountCode";

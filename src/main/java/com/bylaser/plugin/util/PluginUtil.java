@@ -4,7 +4,6 @@ import com.bas.basserver.executionengine.ExecutionException;
 import com.bas.basserver.executionengine.IExecutionEngine;
 import com.bas.basserver.executionengine.IProcess;
 import com.bas.connectionserver.server.AccessDeniedException;
-import com.bas.shared.data.ObjectReference;
 import com.bas.shared.domain.configuration.elements.IDomainVersion;
 import com.bas.shared.domain.operation.IEntity;
 import com.bylaser.plugin.constants.Constants;
@@ -24,6 +23,7 @@ import org.scribe.oauth.OAuthService;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -112,17 +112,9 @@ public class PluginUtil {
         Boolean sentToContact = (Boolean) entity.getAttributeValue(Constants.I_SENT_TO_CONTACT);
         invoice.setSentToContact(sentToContact);
 
-        ObjectReference[] ors = entity.getReferences("invoiceLines");
-        if (ors == null || ors.length == 0) {
-            throw new ExecutionException ("Xero New Invoice: itemLines should not be empty", -1, false);
-        }
+        IEntity[] invoiceLines = engine.getAllReferences(iProcess, entity, Constants.I_INVOICE_LINES);
 
-        List<IEntity> lineItemEntities = new ArrayList<IEntity>();
-
-        for (ObjectReference or : ors) {
-            IEntity lineItem = engine.getEntity(iProcess, or.m_objectName, or.m_objectId);
-            lineItemEntities.add(lineItem);
-        }
+        List<IEntity> lineItemEntities = lineItemEntities = Arrays.asList(invoiceLines);
 
         if (lineItemEntities.isEmpty()) {
             throw new IllegalArgumentException("Xero Invoice: there should be at least one line iterm provided for invoice");

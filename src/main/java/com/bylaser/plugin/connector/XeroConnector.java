@@ -5,6 +5,7 @@ import com.bas.basserver.executionengine.IExecutionEngine;
 import com.bas.basserver.executionengine.IProcess;
 import com.bas.shared.domain.operation.IEntity;
 import com.bylaser.xero.BylaserConstants;
+import com.bylaser.xero.XEROApi;
 import org.scribe.builder.ServiceBuilder;
 import org.scribe.model.OAuthRequest;
 import org.scribe.model.Response;
@@ -52,7 +53,7 @@ public class XeroConnector {
             throw new Exception("Xero Invoice: Xero Access Token Secret not specified. Please Authorise.");
         }
 
-        OAuthService service = new ServiceBuilder().provider(XeroAPI.class).apiKey(apiKey).apiSecret(apiSecret).build();
+        OAuthService service = new ServiceBuilder().provider(XEROApi.class).apiKey(apiKey).apiSecret(apiSecret).build();
         Token accessToken = new Token(xeroAccessToken, xeroAccessTokenSecret);
 
         OAuthRequest request = new OAuthRequest(verb, url);
