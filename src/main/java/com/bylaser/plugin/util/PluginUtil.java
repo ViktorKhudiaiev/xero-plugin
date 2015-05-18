@@ -28,6 +28,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Scanner;
 
 /**
  * @author Victor
@@ -60,7 +61,18 @@ public class PluginUtil {
 
         engine.updateEntity(process, ss);
     }
-
+    //removes empty tags from the resulting XML
+    public static String removeEmptyTags(String xml) {
+        StringBuilder result = new StringBuilder();
+        Scanner scanner = new Scanner(xml);
+        while (scanner.hasNextLine()) {
+            String line = scanner.nextLine();
+            if (!line.endsWith("/>")) {
+                result.append(line).append("\n");
+            }
+        }
+        return result.toString();
+    }
     public static Invoice transformEntityToInvoice(IEntity entity, IExecutionEngine engine, Boolean flagEditInvoice,
                                                    IProcess iProcess)
             throws InvalidParameterException, ExecutionException, AccessDeniedException {

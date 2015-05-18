@@ -4,19 +4,13 @@ import com.bas.basserver.executionengine.ExecutionException;
 import com.bas.basserver.executionengine.IExecutionEngine;
 import com.bas.basserver.executionengine.IProcess;
 import com.bas.shared.domain.operation.IEntity;
-import com.bylaser.plugin.util.PluginUtil;
 import com.bylaser.xero.BylaserConstants;
 import org.scribe.builder.ServiceBuilder;
 import org.scribe.model.OAuthRequest;
 import org.scribe.model.Response;
 import org.scribe.model.Token;
 import org.scribe.model.Verb;
-import org.scribe.model.Verifier;
 import org.scribe.oauth.OAuthService;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
 
 /**
  * @author Victor

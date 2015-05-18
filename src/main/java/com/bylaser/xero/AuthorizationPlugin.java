@@ -26,12 +26,8 @@ import com.bas.basserver.executionengine.IExecutionEngine;
 import com.bas.basserver.executionengine.IProcess;
 import com.bas.basserver.executionengine.SuspendProcessException;
 import com.bas.connectionserver.server.AccessDeniedException;
-import com.bas.shared.domain.configuration.elements.IDomainVersion;
 import com.bas.shared.domain.operation.IEntity;
 import com.bylaser.plugin.util.PluginUtil;
-import org.scribe.builder.ServiceBuilder;
-import org.scribe.model.Token;
-import org.scribe.oauth.OAuthService;
 
 public class AuthorizationPlugin implements IProcess
 {

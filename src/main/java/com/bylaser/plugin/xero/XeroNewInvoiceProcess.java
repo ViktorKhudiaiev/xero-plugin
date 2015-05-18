@@ -20,8 +20,8 @@ import javax.xml.namespace.QName;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
+import static com.bylaser.plugin.util.PluginUtil.removeEmptyTags;
 import static com.bylaser.plugin.util.PluginUtil.transformEntityToInvoice;
 
 /**
@@ -96,19 +96,6 @@ public class XeroNewInvoiceProcess implements IProcess {
 
 
         return null;
-    }
-
-    //removes empty tags from the resulting XML
-    private String removeEmptyTags(String xml) {
-        StringBuilder result = new StringBuilder();
-        Scanner scanner = new Scanner(xml);
-        while (scanner.hasNextLine()) {
-            String line = scanner.nextLine();
-            if (!line.endsWith("/>")) {
-                result.append(line).append("\n");
-            }
-        }
-        return result.toString();
     }
 
     @Override
