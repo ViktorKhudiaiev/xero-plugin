@@ -105,11 +105,8 @@ public class PluginUtil {
         invoice.setContact(c);
         //todo: set UID (invoice number or invoiceid) only for invoices which are edited
         if (flagEditInvoice) {
-            String invoiceNumber = (String) entity.getAttributeValue(Constants.I_INVOICE_NUMBER);
-            invoice.setInvoiceNumber(invoiceNumber);
-
-            Long numberId = (Long) entity.getAttributeValue(Constants.I_NUMBER_ID);
-            invoice.setInvoiceID(numberId.toString());
+            String numberId = (String) entity.getAttributeValue(Constants.I_INVOICE_NUMBER);
+            invoice.setInvoiceID(numberId);
         }
 
         Boolean sentToContact = (Boolean) entity.getAttributeValue(Constants.I_SENT_TO_CONTACT);

@@ -43,7 +43,7 @@ public class XeroDeleteInvoiceProcess implements IProcess {
         try {
             for (Object param : objects) {
                 IEntity invoiceEntity = (IEntity) param;
-                Invoice invoice = transformEntityToInvoice(invoiceEntity, engine, false, this);
+                Invoice invoice = transformEntityToInvoice(invoiceEntity, engine, true, this);
                 invoices.add(invoice);
             }
         } catch (InvalidParameterException e) {
