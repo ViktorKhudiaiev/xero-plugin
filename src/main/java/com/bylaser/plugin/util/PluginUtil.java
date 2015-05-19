@@ -6,6 +6,7 @@ import com.bas.basserver.executionengine.IProcess;
 import com.bas.connectionserver.server.AccessDeniedException;
 import com.bas.shared.domain.configuration.elements.IDomainVersion;
 import com.bas.shared.domain.operation.IEntity;
+import com.bylaser.plugin.connector.XeroConnector;
 import com.bylaser.plugin.constants.Constants;
 import com.bylaser.xero.BylaserConstants;
 import com.bylaser.xero.XEROApi;
@@ -19,8 +20,15 @@ import org.openadaptor.dataobjects.InvalidParameterException;
 import org.openadaptor.util.DateHolder;
 import org.scribe.builder.ServiceBuilder;
 import org.scribe.model.Token;
+import org.scribe.model.Verb;
 import org.scribe.oauth.OAuthService;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.namespace.QName;
+import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,6 +42,8 @@ import java.util.Scanner;
  * @author Victor
  */
 public class PluginUtil {
+
+    private static final String NEW_INVOICE_XERO_API_URL = "https://api.xero.com/api.xro/2.0/Invoices";
 
     public static void buildAuthorizationURL(IProcess process, IEntity ss, IExecutionEngine engine)
             throws Exception {
@@ -61,6 +71,56 @@ public class PluginUtil {
 
         engine.updateEntity(process, ss);
     }
+
+    public static void sendInvoiceToXero(StringBuilder invoicesBuffer, IExecutionEngine engine, IProcess iProcess )
+            throws ExecutionException, AccessDeniedException {
+            XeroConnector instance = XeroConnector.getInstance();
+
+            try {
+                //todo: implement invoices sending to Xero
+                IEntity ss = BylaserConstants.getSystemSettings(iProcess, engine);
+                String xml = invoicesBuffer.toString();
+
+                instance.sendRequest(iProcess, engine, ss, Verb.POST, NEW_INVOICE_XERO_API_URL, removeEmptyTags(xml));
+            } catch (Exception e) {
+                e.printStackTrace();
+                if (e instanceof ExecutionException)
+                    throw (ExecutionException) e;
+                if (e instanceof AccessDeniedException)
+                    throw (AccessDeniedException) e;
+
+                throw new ExecutionException(e, 1, false);
+            }
+    }
+
+    public static StringBuilder getXmlInFormatString(List<Invoice> invoices) throws ExecutionException {
+        try {
+        StringBuilder invoicesBuffer = new StringBuilder();
+        invoicesBuffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n");
+        invoicesBuffer.append("<Invoices>\n");
+
+        JAXBContext jaxbContext = JAXBContext.newInstance(Invoice.class);
+        Marshaller marshaller = jaxbContext.createMarshaller();
+        marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+        QName qName = new QName("Invoice");
+
+        for (Invoice invoice : invoices) {
+            JAXBElement<Invoice> root = new JAXBElement<>(qName, Invoice.class, invoice);
+            StringWriter sw = new StringWriter();
+            marshaller.marshal(root, sw);
+
+            String s = sw.toString();
+            //trim first line in order to have valid XML
+            s = s.substring(s.indexOf(System.getProperty("line.separator")) + 1);
+            invoicesBuffer.append(s).append("\n");
+        }
+        invoicesBuffer.append("</Invoices>");
+            return invoicesBuffer;
+        } catch (JAXBException e) {
+            throw new ExecutionException(e, -1, false);
+        }
+    }
+
     //removes empty tags from the resulting XML
     public static String removeEmptyTags(String xml) {
         StringBuilder result = new StringBuilder();
@@ -103,9 +163,11 @@ public class PluginUtil {
         Contact c = new Contact();
         c.setName(contact);
         invoice.setContact(c);
+
+        invoice.setInvoiceNumber(entity.getAttributeValue(Constants.I_NUMBER_ID).toString());
         //todo: set UID (invoice number or invoiceid) only for invoices which are edited
         if (flagEditInvoice) {
-            String numberId = (String) entity.getAttributeValue(Constants.I_INVOICE_NUMBER);
+            String numberId =  entity.getAttributeValue(Constants.I_INVOICE_NUMBER).toString();
             invoice.setInvoiceID(numberId);
         }
 
@@ -114,7 +176,7 @@ public class PluginUtil {
 
         IEntity[] invoiceLines = engine.getAllReferences(iProcess, entity, Constants.I_INVOICE_LINES);
 
-        List<IEntity> lineItemEntities = lineItemEntities = Arrays.asList(invoiceLines);
+        List<IEntity> lineItemEntities = Arrays.asList(invoiceLines);
 
         if (lineItemEntities.isEmpty()) {
             throw new IllegalArgumentException("Xero Invoice: there should be at least one line iterm provided for invoice");
@@ -130,7 +192,6 @@ public class PluginUtil {
 
         for (IEntity lie : lineItemEntities) {
             LineItem lineItem = new LineItem();
-
             lineItem.setAccountCode((String) lie.getAttributeValue(Constants.LI_ACCOUNT_CODE));
             lineItem.setDescription((String) lie.getAttributeValue(Constants.LI_DESCRIPTION));
             Long lQuantity = (Long) lie.getAttributeValue(Constants.LI_QUANTITY);

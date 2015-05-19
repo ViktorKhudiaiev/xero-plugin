@@ -21,8 +21,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.bylaser.plugin.util.PluginUtil.removeEmptyTags;
-import static com.bylaser.plugin.util.PluginUtil.transformEntityToInvoice;
+import static com.bylaser.plugin.util.PluginUtil.*;
 
 /**
  * @author Victor
@@ -49,52 +48,8 @@ public class XeroNewInvoiceProcess implements IProcess {
         } catch (InvalidParameterException e) {
             throw new ExecutionException(e, -1, false);
         }
-
-        try {
-            StringBuilder invoicesBuffer = new StringBuilder();
-            invoicesBuffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n");
-            invoicesBuffer.append("<Invoices>\n");
-
-            JAXBContext jaxbContext = JAXBContext.newInstance(Invoice.class);
-            Marshaller marshaller = jaxbContext.createMarshaller();
-            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-            QName qName = new QName("Invoice");
-
-            for (Invoice invoice : invoices) {
-                JAXBElement<Invoice> root = new JAXBElement<>(qName, Invoice.class, invoice);
-                StringWriter sw = new StringWriter();
-                marshaller.marshal(root, sw);
-
-                String s = sw.toString();
-                //trim first line in order to have valid XML
-                s = s.substring(s.indexOf(System.getProperty("line.separator")) + 1);
-                invoicesBuffer.append(s).append("\n");
-            }
-            invoicesBuffer.append("</Invoices>");
-
-            XeroConnector instance = XeroConnector.getInstance();
-
-            try {
-                //todo: implement invoices sending to Xero
-                IEntity ss = BylaserConstants.getSystemSettings(this, engine);
-                String xml = invoicesBuffer.toString();
-
-                instance.sendRequest(this, engine, ss, Verb.POST, NEW_INVOICE_XERO_API_URL, removeEmptyTags(xml));
-            } catch (Exception e) {
-                e.printStackTrace();
-                if (e instanceof ExecutionException)
-                    throw (ExecutionException) e;
-                if (e instanceof AccessDeniedException)
-                    throw (AccessDeniedException) e;
-
-                throw new ExecutionException(e, 1, false);
-            }
-
-        } catch (JAXBException e) {
-            throw new ExecutionException(e, -1, false);
-        }
-
-
+        StringBuilder invoicesBuffer = getXmlInFormatString(invoices);
+        sendInvoiceToXero(invoicesBuffer, engine, this);
         return null;
     }
 

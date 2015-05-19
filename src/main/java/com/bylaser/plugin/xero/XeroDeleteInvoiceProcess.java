@@ -21,8 +21,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.bylaser.plugin.util.PluginUtil.removeEmptyTags;
-import static com.bylaser.plugin.util.PluginUtil.transformEntityToInvoice;
+import static com.bylaser.plugin.util.PluginUtil.*;
 
 /**
  * @author Victor
@@ -35,7 +34,7 @@ public class XeroDeleteInvoiceProcess implements IProcess {
     public Object execute(IExecutionEngine engine, Object[] objects) throws SuspendProcessException, ExecutionException, AccessDeniedException {
 
         if (objects == null || objects.length == 0 || !(objects[0] instanceof IEntity)) {
-            throw new ExecutionException("Invalid parameters to create invoice for Xero", -1, false);
+            throw new ExecutionException("Invalid parameters to delete invoice for Xero", -1, false);
         }
 
         List<Invoice> invoices = new ArrayList<>();
@@ -58,43 +57,23 @@ public class XeroDeleteInvoiceProcess implements IProcess {
             JAXBContext jaxbContext = JAXBContext.newInstance(Invoice.class);
             Marshaller marshaller = jaxbContext.createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-            QName qName = new QName("Invoice");
-
             for (Invoice invoice : invoices) {
-                JAXBElement<Invoice> root = new JAXBElement<>(qName, Invoice.class, invoice);
-                StringWriter sw = new StringWriter();
-                marshaller.marshal(root, sw);
-
-                String s = sw.toString();
-                //trim first line in order to have valid XML
-                s = s.substring(s.indexOf(System.getProperty("line.separator")) + 1);
-                invoicesBuffer.append(s).append("\n");
+                invoicesBuffer.append("<Invoice>\n");
+                invoicesBuffer.append("<InvoiceNumber>");
+                invoicesBuffer.append(invoice.getInvoiceID());
+                invoicesBuffer.append("</InvoiceNumber>\n");
+                invoicesBuffer.append("<Status>");
+                invoicesBuffer.append(invoice.getStatus());
+                invoicesBuffer.append("</Status>\n");
+                invoicesBuffer.append("</Invoice>\n");
             }
             invoicesBuffer.append("</Invoices>");
 
-            XeroConnector instance = XeroConnector.getInstance();
-
-            try {
-                //todo: implement invoices sending to Xero
-                IEntity ss = BylaserConstants.getSystemSettings(this, engine);
-                String xml = invoicesBuffer.toString();
-
-                instance.sendRequest(this, engine, ss, Verb.POST, NEW_INVOICE_XERO_API_URL, removeEmptyTags(xml));
-            } catch (Exception e) {
-                e.printStackTrace();
-                if (e instanceof ExecutionException)
-                    throw (ExecutionException) e;
-                if (e instanceof AccessDeniedException)
-                    throw (AccessDeniedException) e;
-
-                throw new ExecutionException(e, 1, false);
-            }
+            sendInvoiceToXero(invoicesBuffer, engine, this);
 
         } catch (JAXBException e) {
             throw new ExecutionException(e, -1, false);
         }
-
-
         return null;
     }
 
