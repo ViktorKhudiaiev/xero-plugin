@@ -43,7 +43,7 @@ import java.util.Scanner;
  */
 public class PluginUtil {
 
-    private static final String NEW_INVOICE_XERO_API_URL = "https://api.xero.com/api.xro/2.0/Invoices";
+    private static final String INVOICE_XERO_API_URL = "https://api.xero.com/api.xro/2.0/Invoices";
 
     public static void buildAuthorizationURL(IProcess process, IEntity ss, IExecutionEngine engine)
             throws Exception {
@@ -77,11 +77,16 @@ public class PluginUtil {
             XeroConnector instance = XeroConnector.getInstance();
 
             try {
-                //todo: implement invoices sending to Xero
                 IEntity ss = BylaserConstants.getSystemSettings(iProcess, engine);
                 String xml = invoicesBuffer.toString();
 
-                instance.sendRequest(iProcess, engine, ss, Verb.POST, NEW_INVOICE_XERO_API_URL, removeEmptyTags(xml));
+                instance.sendRequest(iProcess, engine, ss, Verb.POST, INVOICE_XERO_API_URL, removeEmptyTags(xml));
+                ////////////////////////////////////////////////
+                IEntity invoice = null; //todo: pass invoice object into this method
+                invoice.setAttributeValue("InvoiceID", "asdf-asdf-asdf-asdf");
+                engine.updateEntity(iProcess, invoice);
+                ////////////////////////////////////////////////
+
             } catch (Exception e) {
                 e.printStackTrace();
                 if (e instanceof ExecutionException)
