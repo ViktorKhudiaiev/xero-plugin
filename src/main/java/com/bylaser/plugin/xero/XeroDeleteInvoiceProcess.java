@@ -42,38 +42,15 @@ public class XeroDeleteInvoiceProcess implements IProcess {
         try {
             for (Object param : objects) {
                 IEntity invoiceEntity = (IEntity) param;
-                Invoice invoice = transformEntityToInvoice(invoiceEntity, engine, true, this);
+                Invoice invoice = transformEntityToInvoice(invoiceEntity, engine, true, this, true);
                 invoices.add(invoice);
             }
         } catch (InvalidParameterException e) {
             throw new ExecutionException(e, -1, false);
         }
+            StringBuilder invoicesBuffer = getXmlInFormatString(invoices);
+            sendInvoiceToXero(invoicesBuffer, engine, this, null);
 
-        try {
-            StringBuilder invoicesBuffer = new StringBuilder();
-            invoicesBuffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n");
-            invoicesBuffer.append("<Invoices>\n");
-
-            JAXBContext jaxbContext = JAXBContext.newInstance(Invoice.class);
-            Marshaller marshaller = jaxbContext.createMarshaller();
-            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-            for (Invoice invoice : invoices) {
-                invoicesBuffer.append("<Invoice>\n");
-                invoicesBuffer.append("<InvoiceNumber>");
-                invoicesBuffer.append(invoice.getInvoiceID());
-                invoicesBuffer.append("</InvoiceNumber>\n");
-                invoicesBuffer.append("<Status>");
-                invoicesBuffer.append(invoice.getStatus());
-                invoicesBuffer.append("</Status>\n");
-                invoicesBuffer.append("</Invoice>\n");
-            }
-            invoicesBuffer.append("</Invoices>");
-
-            sendInvoiceToXero(invoicesBuffer, engine, this);
-
-        } catch (JAXBException e) {
-            throw new ExecutionException(e, -1, false);
-        }
         return null;
     }
 

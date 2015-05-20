@@ -29,7 +29,7 @@ public class XeroConnector {
         return instance;
     }
 
-    public void sendRequest(IProcess process, IExecutionEngine engine, IEntity systemSettings, Verb verb, String url,
+    public String sendRequest(IProcess process, IExecutionEngine engine, IEntity systemSettings, Verb verb, String url,
                             String xml) throws Exception {
 
 
@@ -66,6 +66,6 @@ public class XeroConnector {
             throw new ExecutionException(response.getBody(), -1, false);
         }
 
-        System.out.println(response.getBody());
+        return response.getBody();
     }
 }

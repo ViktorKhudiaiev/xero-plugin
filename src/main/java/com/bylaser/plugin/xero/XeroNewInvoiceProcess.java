@@ -36,20 +36,20 @@ public class XeroNewInvoiceProcess implements IProcess {
         if (objects == null || objects.length == 0 || !(objects[0] instanceof IEntity)) {
             throw new ExecutionException("Invalid parameters to create invoice for Xero", -1, false);
         }
-
+        IEntity invoiceEntity = null;
         List<Invoice> invoices = new ArrayList<>();
 
         try {
             for (Object param : objects) {
-                IEntity invoiceEntity = (IEntity) param;
-                Invoice invoice = transformEntityToInvoice(invoiceEntity, engine, false, this);
+                invoiceEntity = (IEntity) param;
+                Invoice invoice = transformEntityToInvoice(invoiceEntity, engine, false, this, false);
                 invoices.add(invoice);
             }
         } catch (InvalidParameterException e) {
             throw new ExecutionException(e, -1, false);
         }
         StringBuilder invoicesBuffer = getXmlInFormatString(invoices);
-        sendInvoiceToXero(invoicesBuffer, engine, this);
+        sendInvoiceToXero(invoicesBuffer, engine, this, invoiceEntity);
         return null;
     }
 

@@ -27,7 +27,10 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.namespace.QName;
+import java.io.InputStream;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -72,30 +75,33 @@ public class PluginUtil {
         engine.updateEntity(process, ss);
     }
 
-    public static void sendInvoiceToXero(StringBuilder invoicesBuffer, IExecutionEngine engine, IProcess iProcess )
+    public static void sendInvoiceToXero(StringBuilder invoicesBuffer, IExecutionEngine engine, IProcess iProcess,
+                                         IEntity invoiceEntity)
             throws ExecutionException, AccessDeniedException {
             XeroConnector instance = XeroConnector.getInstance();
 
             try {
+                //todo: implement invoices sending to Xero
                 IEntity ss = BylaserConstants.getSystemSettings(iProcess, engine);
                 String xml = invoicesBuffer.toString();
 
-                instance.sendRequest(iProcess, engine, ss, Verb.POST, INVOICE_XERO_API_URL, removeEmptyTags(xml));
-                ////////////////////////////////////////////////
-                IEntity invoice = null; //todo: pass invoice object into this method
-                invoice.setAttributeValue("InvoiceID", "asdf-asdf-asdf-asdf");
-                engine.updateEntity(iProcess, invoice);
-                ////////////////////////////////////////////////
-
+                   String resultXML = instance.sendRequest(iProcess, engine, ss, Verb.POST, INVOICE_XERO_API_URL, removeEmptyTags(xml));
+                if (invoiceEntity != null) {
+                    invoiceEntity.setAttributeValue(Constants.I_INVOICE_NUMBER, getTagValue(resultXML, "InvoiceID"));
+                    engine.updateEntity(iProcess,invoiceEntity);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
                 if (e instanceof ExecutionException)
                     throw (ExecutionException) e;
                 if (e instanceof AccessDeniedException)
                     throw (AccessDeniedException) e;
-
                 throw new ExecutionException(e, 1, false);
             }
+    }
+
+    private static String getTagValue(String xml, String tagName){
+        return xml.split("<"+tagName+">")[1].split("</"+tagName+">")[0];
     }
 
     public static StringBuilder getXmlInFormatString(List<Invoice> invoices) throws ExecutionException {
@@ -139,7 +145,7 @@ public class PluginUtil {
         return result.toString();
     }
     public static Invoice transformEntityToInvoice(IEntity entity, IExecutionEngine engine, Boolean flagEditInvoice,
-                                                   IProcess iProcess)
+                                                   IProcess iProcess, Boolean flagDeleteInvoice)
             throws InvalidParameterException, ExecutionException, AccessDeniedException {
         Invoice invoice = new Invoice();
 
@@ -155,10 +161,12 @@ public class PluginUtil {
 
         DateHolder dhExpPaymentDate = (DateHolder) entity.getAttributeValue(Constants.I_FULLY_PAID_ON_DATE);
         invoice.setFullyPaidOnDate(getDateFromDateHolder(dhExpPaymentDate));
-
-        String invoiceStatus = (String) entity.getAttributeValue(Constants.I_INVOICE_STATUS);
-        invoice.setStatus(InvoiceStatus.valueOf(invoiceStatus));
-
+        if (flagDeleteInvoice) {
+            invoice.setStatus(InvoiceStatus.DELETED);
+        } else {
+            String invoiceStatus = (String) entity.getAttributeValue(Constants.I_INVOICE_STATUS);
+            invoice.setStatus(InvoiceStatus.valueOf(invoiceStatus));
+        }
         String invoiceType = (String) entity.getAttributeValue(Constants.I_INVOICE_TYPE);
         invoice.setType(InvoiceType.valueOf(invoiceType));
 

@@ -40,14 +40,14 @@ public class XeroUpdateInvoiceProcess implements IProcess {
         try {
             for (Object param : objects) {
                 IEntity invoiceEntity = (IEntity) param;
-                Invoice invoice = transformEntityToInvoice(invoiceEntity, engine, true, this);
+                Invoice invoice = transformEntityToInvoice(invoiceEntity, engine, true, this, false);
                 invoices.add(invoice);
             }
         } catch (InvalidParameterException e) {
             throw new ExecutionException(e, -1, false);
         }
         StringBuilder invoicesBuffer = getXmlInFormatString(invoices);
-        sendInvoiceToXero(invoicesBuffer, engine, this);
+        sendInvoiceToXero(invoicesBuffer, engine, this, null);
 
 
         return null;
