@@ -1,4 +1,4 @@
-package com.bylaser.plugin.util;
+package com.hatchit.plugin.util;
 
 import com.bas.basserver.executionengine.ExecutionException;
 import com.bas.basserver.executionengine.IExecutionEngine;
@@ -6,10 +6,10 @@ import com.bas.basserver.executionengine.IProcess;
 import com.bas.connectionserver.server.AccessDeniedException;
 import com.bas.shared.domain.configuration.elements.IDomainVersion;
 import com.bas.shared.domain.operation.IEntity;
-import com.bylaser.plugin.connector.XeroConnector;
-import com.bylaser.plugin.constants.Constants;
-import com.bylaser.xero.BylaserConstants;
-import com.bylaser.xero.XEROApi;
+import com.hatchit.plugin.connector.XeroConnector;
+import com.hatchit.plugin.constants.Constants;
+import com.hatchit.xero.BylaserConstants;
+import com.hatchit.xero.XEROApi;
 import com.connectifier.xeroclient.models.Contact;
 import com.connectifier.xeroclient.models.CurrencyCode;
 import com.connectifier.xeroclient.models.Invoice;
@@ -27,10 +27,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.namespace.QName;
-import java.io.InputStream;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -82,7 +79,7 @@ public class PluginUtil {
 
             try {
                 //todo: implement invoices sending to Xero
-                IEntity ss = BylaserConstants.getSystemSettings(iProcess, engine);
+                IEntity ss = BylaserConstants.getAccountSettings(iProcess, engine);
                 String xml = invoicesBuffer.toString();
 
                    String resultXML = instance.sendRequest(iProcess, engine, ss, Verb.POST, INVOICE_XERO_API_URL, removeEmptyTags(xml));
@@ -116,6 +113,7 @@ public class PluginUtil {
         QName qName = new QName("Invoice");
 
         for (Invoice invoice : invoices) {
+
             JAXBElement<Invoice> root = new JAXBElement<>(qName, Invoice.class, invoice);
             StringWriter sw = new StringWriter();
             marshaller.marshal(root, sw);
@@ -131,7 +129,12 @@ public class PluginUtil {
             throw new ExecutionException(e, -1, false);
         }
     }
-
+    public static StringBuilder insertLineAmountTypesToXML(StringBuilder xml, String lineAmountTypes) {
+        String endDueDate = "</DueDate>";
+        String string = xml.toString();
+        StringBuilder resultXML = new StringBuilder(string.replaceFirst(endDueDate, endDueDate + "\n" +lineAmountTypes));
+        return resultXML;
+    }
     //removes empty tags from the resulting XML
     public static String removeEmptyTags(String xml) {
         StringBuilder result = new StringBuilder();
@@ -212,7 +215,15 @@ public class PluginUtil {
             Double lUnitAmount = (Double) lie.getAttributeValue(Constants.LI_UNIT_AMOUNT);
             lineItem.setUnitAmount(BigDecimal.valueOf(lUnitAmount));
 
-            lineItem.setTaxType((String) lie.getAttributeValue(Constants.LI_TAX_TYPE));
+            String taxType = (String) lie.getAttributeValue(Constants.LI_TAX_TYPE);
+            if (taxType != null) {
+                if (taxType.equals("GST on Income")) {
+                    lineItem.setTaxType("OUTPUT");
+                } else {
+                    lineItem.setTaxType("EXEMPTOUTPUT");
+                }
+            }
+            lineItem.setTaxAmount((BigDecimal) lie.getAttributeValue(Constants.LI_TAX));
             lineItem.setItemCode((String) lie.getAttributeValue(Constants.LI_ITEM_CODE));
             result.add(lineItem);
         }

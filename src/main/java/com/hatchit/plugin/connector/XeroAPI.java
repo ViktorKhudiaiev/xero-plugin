@@ -1,4 +1,4 @@
-package com.bylaser.plugin.connector;
+package com.hatchit.plugin.connector;
 
 import org.scribe.builder.api.DefaultApi10a;
 import org.scribe.model.Token;

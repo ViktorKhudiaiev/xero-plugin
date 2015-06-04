@@ -19,7 +19,7 @@
  * Copyright (c) 2002 - 2012 Awaresoft Pty Ltd. All rights reserved.    *
  ***********************************************************************
  */
-package com.bylaser.xero;
+package com.hatchit.xero;
 
 import org.scribe.builder.api.DefaultApi10a;
 import org.scribe.model.Token;

@@ -19,7 +19,7 @@
  * Copyright (c) 2002 - 2012 Awaresoft Pty Ltd. All rights reserved.    *
  ***********************************************************************
  */
-package com.bylaser.xero;
+package com.hatchit.xero;
 
 import com.bas.basserver.executionengine.ExecutionException;
 import com.bas.basserver.executionengine.IExecutionEngine;
@@ -27,7 +27,7 @@ import com.bas.basserver.executionengine.IProcess;
 import com.bas.basserver.executionengine.SuspendProcessException;
 import com.bas.connectionserver.server.AccessDeniedException;
 import com.bas.shared.domain.operation.IEntity;
-import com.bylaser.plugin.util.PluginUtil;
+import com.hatchit.plugin.util.PluginUtil;
 
 public class AuthorizationPlugin implements IProcess
 {
@@ -36,7 +36,7 @@ public class AuthorizationPlugin implements IProcess
 	{
 		try
 		{
-            IEntity ss = BylaserConstants.getSystemSettings(this, engine);
+            IEntity ss = BylaserConstants.getAccountSettings(this, engine);
             PluginUtil.buildAuthorizationURL(this, ss, engine);
 		}
 		catch (Exception e)

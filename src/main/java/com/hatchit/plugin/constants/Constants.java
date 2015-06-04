@@ -1,4 +1,4 @@
-package com.bylaser.plugin.constants;
+package com.hatchit.plugin.constants;
 
 /**
  * @author Victor
@@ -18,12 +18,13 @@ public final class Constants {
     public static final String I_INVOICE_STATUS = "status";
     public static final String I_INVOICE_TYPE = "type";
     public static final String I_INVOICE_LINES = "invoiceLines";
-
+    public static final String I_INVOICE_LINE_AMOUNT_TYPES = "LineAmountTypes";
     //list of LineItem attribute names
     public static final String LI_ACCOUNT_CODE = "AccountCode";
     public static final String LI_DESCRIPTION = "Item";
     public static final String LI_QUANTITY = "Qty";
     public static final String LI_UNIT_AMOUNT = "UnitCost";
-    public static final String LI_TAX_TYPE = "Tax";
+    public static final String LI_TAX = "Tax";
+    public static final String LI_TAX_TYPE = "TaxType";
     public static final String LI_ITEM_CODE = "Code";
 }

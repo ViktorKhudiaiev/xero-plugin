@@ -1,11 +1,11 @@
-package com.bylaser.plugin.connector;
+package com.hatchit.plugin.connector;
 
 import com.bas.basserver.executionengine.ExecutionException;
 import com.bas.basserver.executionengine.IExecutionEngine;
 import com.bas.basserver.executionengine.IProcess;
 import com.bas.shared.domain.operation.IEntity;
-import com.bylaser.xero.BylaserConstants;
-import com.bylaser.xero.XEROApi;
+import com.hatchit.xero.BylaserConstants;
+import com.hatchit.xero.XEROApi;
 import org.scribe.builder.ServiceBuilder;
 import org.scribe.model.OAuthRequest;
 import org.scribe.model.Response;

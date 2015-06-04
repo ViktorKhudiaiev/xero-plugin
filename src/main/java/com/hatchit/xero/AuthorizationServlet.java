@@ -19,7 +19,7 @@
  * Copyright (c) 2002 - 2012 Awaresoft Pty Ltd. All rights reserved.    *
  ***********************************************************************
  */
-package com.bylaser.xero;
+package com.hatchit.xero;
 
 import com.bas.shared.data.QueryResult;
 import com.bas.shared.domain.configuration.elements.Query;
@@ -94,11 +94,11 @@ public class AuthorizationServlet extends HttpServlet
 											ctx, 
 											session, 
 											"executeQuery", 
-											new Object [] { Query.createFromRuleLanguageString("FIND ALL SystemSettings"), new Integer (1), new Integer (1), null, null },
+											new Object [] { Query.createFromRuleLanguageString("FIND ALL AccountSettings"), new Integer (1), new Integer (1), null, null },
 											3600000);
 		IEntity [] ents = qr.getEntities();
 		if (ents == null)
-			throw new Exception ("Unable to get SystemSettings entity");
+			throw new Exception ("Unable to get AccountSettings entity");
 		
 		IEntity ss = ents [0];
 		String cKey = (String) ss.getAttributeValue(BylaserConstants.SYSTEM_SETTINGS_XERO_CONSUMER_KEY_ATTR);
@@ -111,7 +111,7 @@ public class AuthorizationServlet extends HttpServlet
 		
 		String baseURL = (String) ss.getAttributeValue(BylaserConstants.SYSTEM_SETTINGS_BASE_URL_ATTR);
 		if (baseURL == null)
-			throw new Exception ("XERO Authorization servlet: base URL not defined in SystemSettings");
+			throw new Exception ("XERO Authorization servlet: base URL not defined in AccountSettings");
 				
 		String tSecret = (String) ss.getAttributeValue(BylaserConstants.SYSTEM_SETTINGS_XERO_REQ_TOKEN_SECRET_ATTR);
 		if (tSecret == null)
@@ -135,7 +135,7 @@ public class AuthorizationServlet extends HttpServlet
 		ss.setAttributeValue (BylaserConstants.SYSTEM_SETTINGS_XERO_ACC_TOKEN_SECRET_ATTR, accessToken.getSecret());
 		ss.setAttributeValue (BylaserConstants.SYSTEM_SETTINGS_XERO_TOKENS_TIMESTAMP_ATTR, new DateTimeHolder(new Date ()));
 		
-		System.out.println ("Updating System Settings");
+		System.out.println ("Updating Account Settings");
 		WebAppUtils.sendMessageToExecutionEngine (
 				ctx, 
 				session, 

@@ -19,7 +19,7 @@
  * Copyright (c) 2002 - 2005 Awaresoft Pty Ltd. All rights reserved.    *
  ***********************************************************************
  */
-package com.bylaser.xero;
+package com.hatchit.xero;
 
 import com.bas.basserver.executionengine.IExecutionEngine;
 import com.bas.basserver.executionengine.IProcess;
@@ -780,14 +780,14 @@ public class BylaserConstants
 	
 	public static final String ACL_VENDOR_CQ =                     "VendorCQ";
 	
-	public static IEntity getSystemSettings (IProcess process, IExecutionEngine engine)
+	public static IEntity getAccountSettings(IProcess process, IExecutionEngine engine)
 		throws Exception 
 	{
-		Query query = Query.createFromRuleLanguageString ("FIND ALL SystemSettings");
+		Query query = Query.createFromRuleLanguageString ("FIND ALL AccountSettings");
 		QueryResult qr = engine.executeQuery (process, query, new Integer (1), new Integer (1));
 		IEntity [] ents = qr.getEntities();
 		if (ents == null || ents.length == 0)
-			throw new Exception ("Unable to find System Settings object");
+			throw new Exception ("Unable to find Account Settings object");
 		
 		return ents[0];
 	}

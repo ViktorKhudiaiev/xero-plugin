@@ -1,4 +1,4 @@
-package com.bylaser.plugin.xero;
+package com.hatchit.plugin.xero;
 
 import com.bas.basserver.executionengine.ExecutionException;
 import com.bas.basserver.executionengine.IExecutionEngine;
@@ -6,61 +6,61 @@ import com.bas.basserver.executionengine.IProcess;
 import com.bas.basserver.executionengine.SuspendProcessException;
 import com.bas.connectionserver.server.AccessDeniedException;
 import com.bas.shared.domain.operation.IEntity;
-import com.bylaser.plugin.connector.XeroConnector;
-import com.bylaser.xero.BylaserConstants;
 import com.connectifier.xeroclient.models.Invoice;
+import com.hatchit.plugin.constants.Constants;
 import org.openadaptor.dataobjects.InvalidParameterException;
-import org.scribe.model.Verb;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.namespace.QName;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.bylaser.plugin.util.PluginUtil.*;
+import static com.hatchit.plugin.util.PluginUtil.*;
 
 /**
  * @author Victor
  */
-public class XeroNewInvoiceProcess implements IProcess {
-
-    private static final String NEW_INVOICE_XERO_API_URL = "https://api.xero.com/api.xro/2.0/Invoices";
-
+public class XeroUpdateInvoiceProcess implements IProcess {
     @Override
     public Object execute(IExecutionEngine engine, Object[] objects) throws SuspendProcessException, ExecutionException, AccessDeniedException {
 
         if (objects == null || objects.length == 0 || !(objects[0] instanceof IEntity)) {
-            throw new ExecutionException("Invalid parameters to create invoice for Xero", -1, false);
+            throw new ExecutionException("Invalid parameters to edit invoice for Xero", -1, false);
         }
-        IEntity invoiceEntity = null;
-        List<Invoice> invoices = new ArrayList<>();
 
+        List<Invoice> invoices = new ArrayList<>();
+        String lineAmountTypes = null;
         try {
             for (Object param : objects) {
-                invoiceEntity = (IEntity) param;
-                Invoice invoice = transformEntityToInvoice(invoiceEntity, engine, false, this, false);
+                IEntity invoiceEntity = (IEntity) param;
+                Invoice invoice = transformEntityToInvoice(invoiceEntity, engine, true, this, false);
                 invoices.add(invoice);
+                lineAmountTypes = (String) invoiceEntity.getAttributeValue(Constants.I_INVOICE_LINE_AMOUNT_TYPES);
             }
         } catch (InvalidParameterException e) {
             throw new ExecutionException(e, -1, false);
         }
         StringBuilder invoicesBuffer = getXmlInFormatString(invoices);
-        sendInvoiceToXero(invoicesBuffer, engine, this, invoiceEntity);
+        if (lineAmountTypes != null) {
+            lineAmountTypes = "<LineAmountTypes>"+ lineAmountTypes +"</LineAmountTypes>";
+        }
+        StringBuilder resultXML;
+        if (lineAmountTypes != null) {
+            resultXML = insertLineAmountTypesToXML(invoicesBuffer, lineAmountTypes);
+        } else {
+            resultXML = invoicesBuffer;
+        }
+        sendInvoiceToXero(resultXML, engine, this, null);
+
+
         return null;
     }
 
     @Override
     public Object resume(IExecutionEngine iExecutionEngine, Object o) throws SuspendProcessException, ExecutionException, AccessDeniedException {
-        throw new UnsupportedOperationException("resume method not yet implemented");
+        return null;
     }
 
     @Override
     public boolean cancel() {
-        throw new UnsupportedOperationException("cancel method not yet implemented");
+        return false;
     }
-
 }

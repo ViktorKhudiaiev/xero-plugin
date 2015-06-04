@@ -1,0 +1,69 @@
+package com.hatchit.plugin.xero;
+
+import com.bas.basserver.executionengine.ExecutionException;
+import com.bas.basserver.executionengine.IExecutionEngine;
+import com.bas.basserver.executionengine.IProcess;
+import com.bas.basserver.executionengine.SuspendProcessException;
+import com.bas.connectionserver.server.AccessDeniedException;
+import com.bas.shared.domain.operation.IEntity;
+import com.connectifier.xeroclient.models.Invoice;
+import com.hatchit.plugin.constants.Constants;
+import org.openadaptor.dataobjects.InvalidParameterException;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.hatchit.plugin.util.PluginUtil.*;
+
+/**
+ * @author Victor
+ */
+public class XeroNewInvoiceProcess implements IProcess {
+
+    private static final String NEW_INVOICE_XERO_API_URL = "https://api.xero.com/api.xro/2.0/Invoices";
+
+    @Override
+    public Object execute(IExecutionEngine engine, Object[] objects) throws SuspendProcessException, ExecutionException, AccessDeniedException {
+
+        if (objects == null || objects.length == 0 || !(objects[0] instanceof IEntity)) {
+            throw new ExecutionException("Invalid parameters to create invoice for Xero", -1, false);
+        }
+        IEntity invoiceEntity = null;
+        List<Invoice> invoices = new ArrayList<>();
+        String lineAmountTypes = null;
+        try {
+            for (Object param : objects) {
+                invoiceEntity = (IEntity) param;
+                Invoice invoice = transformEntityToInvoice(invoiceEntity, engine, false, this, false);
+                invoices.add(invoice);
+                lineAmountTypes = (String) invoiceEntity.getAttributeValue(Constants.I_INVOICE_LINE_AMOUNT_TYPES);
+            }
+        } catch (InvalidParameterException e) {
+            throw new ExecutionException(e, -1, false);
+        }
+
+        if (lineAmountTypes != null) {
+            lineAmountTypes = "<LineAmountTypes>"+ lineAmountTypes +"</LineAmountTypes>";
+        }
+        StringBuilder invoicesBuffer = getXmlInFormatString(invoices);
+        StringBuilder resultXML;
+        if (lineAmountTypes != null) {
+            resultXML = insertLineAmountTypesToXML(invoicesBuffer, lineAmountTypes);
+        } else {
+            resultXML = invoicesBuffer;
+        }
+        sendInvoiceToXero(resultXML, engine, this, invoiceEntity);
+        return null;
+    }
+
+    @Override
+    public Object resume(IExecutionEngine iExecutionEngine, Object o) throws SuspendProcessException, ExecutionException, AccessDeniedException {
+        throw new UnsupportedOperationException("resume method not yet implemented");
+    }
+
+    @Override
+    public boolean cancel() {
+        throw new UnsupportedOperationException("cancel method not yet implemented");
+    }
+
+}

@@ -1,4 +1,4 @@
-package com.bylaser.plugin.xero;
+package com.hatchit.plugin.xero;
 
 import com.bas.basserver.executionengine.ExecutionException;
 import com.bas.basserver.executionengine.IExecutionEngine;
@@ -6,22 +6,13 @@ import com.bas.basserver.executionengine.IProcess;
 import com.bas.basserver.executionengine.SuspendProcessException;
 import com.bas.connectionserver.server.AccessDeniedException;
 import com.bas.shared.domain.operation.IEntity;
-import com.bylaser.plugin.connector.XeroConnector;
-import com.bylaser.xero.BylaserConstants;
 import com.connectifier.xeroclient.models.Invoice;
 import org.openadaptor.dataobjects.InvalidParameterException;
-import org.scribe.model.Verb;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.namespace.QName;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.bylaser.plugin.util.PluginUtil.*;
+import static com.hatchit.plugin.util.PluginUtil.*;
 
 /**
  * @author Victor
